@@ -1,4 +1,13 @@
 from constants import *
+from layers import *
+from preprocessing import *
+from losses import *
+
+from keras.layers import Input, Embedding, Dropout, Concatenate, Activation
+from keras import Model
+
+import logging
+log = logging.getLogger('log_file.txt')
 
 def attention_model_3():
     # inputs
@@ -11,6 +20,7 @@ def attention_model_3():
     context_entity_tags = Input(shape=(MAX_TEXT_LEN, ))
     context_mask = Input(shape=(MAX_TEXT_LEN, ))
     # onehots
+    embedding_map, pos_onehot_embeddings, entity_onehot_embeddings = load_embeddings(EMB_PATH, POS_PATH, ENT_PATH)
     onehot_pos_layer = Embedding(POS_SIZE,
                                  POS_SIZE,
                                  weights=[pos_onehot_embeddings], 
@@ -19,8 +29,8 @@ def attention_model_3():
                                     ENTITY_SIZE,
                                     weights=[entity_onehot_embeddings], 
                                     trainable=False)
-    context_pos_tags = onehot_pos_layer(context_pos_tags)
-    context_entity_tags = onehot_entity_layer(context_entity_tags)
+    context_pos_tags_oh = onehot_pos_layer(context_pos_tags)
+    context_entity_tags_oh = onehot_entity_layer(context_entity_tags)
     # embedding layer  
     embedding_layer = Embedding(WORDS_IN_VOCABULARY, 
                                 EMBEDDING_SIZE,
@@ -37,13 +47,13 @@ def attention_model_3():
     '''context_data = Concatenate() ([embedded_context, 
                                    context_features, 
                                    quemb_match, 
-                                   context_pos_tags,
-                                   context_entity_tags])
+                                   context_pos_tags_oh,
+                                   context_entity_tags_oh])
     '''
     context_data = Concatenate() ([embedded_context, 
                                    context_features, 
-                                   context_pos_tags,
-                                   context_entity_tags])
+                                   context_pos_tags_oh,
+                                   context_entity_tags_oh])
     
     question_data = embedded_question
     # RNN for context
@@ -85,12 +95,15 @@ class Attention_Model:
         else:
             self.model = attention_model_3()
 
-    def train(self, data, meta, n_epochs=40):
+    def train(self, data=None, meta=None, n_epochs=40, from_scratch=False):
         model = self.model
         log.info('Train started')
-        train_data = data['train']
-        dev_data = data['dev']
-
+        if data:
+            train_data = data['train']
+            dev_data = data['dev']
+        else:
+            train_data = None
+            dev_data = None
         train_contexts = get_contexts(train_data) # [word_indices, context_features, pos_tags, entity_tags, mask]
         train_questions = get_questions(train_data) # [word_indices, mask]
         train_answers_bin_list = get_bin_answers_train(train_data) # [starts, ends]
@@ -99,7 +112,7 @@ class Attention_Model:
         #
         dev_contexts = get_contexts(dev_data, is_train=False) # [word_indices, context_features, pos_tags, entity_tags, mask]
         dev_questions = get_questions(dev_data, is_train=False) # [word_indices, mask]
-        dev_answers_pairs = get_pairs_answers_dev(dev_data, is_train=False) # [[start_1, end_1], [start_2, end_2], ...]
+        '''dev_answers_pairs = get_pairs_answers_dev(dev_data, is_train=False) # [[start_1, end_1], [start_2, end_2], ...]'''
         log.info('Dev data loaded')
         #
         train_data = train_contexts + train_questions
