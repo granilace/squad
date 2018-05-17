@@ -11,6 +11,11 @@ import logging
 logging.basicConfig(filename='train.log',level=logging.DEBUG)
 
 import time
+import keras
+###
+import keras.losses
+keras.losses.custom_loss = custom_loss
+###
 
 def attention_model_3():
     # inputs
@@ -85,7 +90,7 @@ def attention_model_3():
                           question_mask], 
                   outputs=[output_starts, 
                            output_ends])
-    model.compile(loss=sum_of_losses,
+    model.compile(loss=custom_loss,
                   optimizer='rmsprop',
                   metrics=['accuracy'])
     return model
@@ -99,10 +104,11 @@ class Attention_Model:
         else:
             self.model = attention_model_3()
             logging.info('---Model created---')
-
-    def train(self, data=None, meta=None, n_epochs=40, from_scratch=False):
+        self.data_loaded = False
+        
+    def load_data(self, data=None, meta=None, from_scratch=False):
         model = self.model
-        logging.info('Training started')
+        logging.info('Data loading started')
         if data:
             train_data = data['train']
             dev_data = data['dev']
@@ -111,7 +117,7 @@ class Attention_Model:
             dev_data = None
         train_contexts = get_contexts(train_data) # [word_indices, context_features, pos_tags, entity_tags, mask]
         train_questions = get_questions(train_data) # [word_indices, mask]
-        train_answers_bin_list = get_bin_answers_train(train_data) # [starts, ends]
+        self.train_answers_bin_list = get_bin_answers_train(train_data) # [starts, ends]
         self.train_answers_pairs = get_pairs_answers_train(train_data) # [[start_1, end_1]]
         logging.info('Train data loaded')
         #
@@ -123,22 +129,39 @@ class Attention_Model:
         self.train_data = train_contexts + train_questions
         self.dev_data = dev_contexts + dev_questions
         #
-        train_valid_x = get_valid_data(self.train_data)
-        train_valid_y = self.train_answers_pairs[:VALID_SAMPLES]
+        self.train_valid_x = get_valid_data(self.train_data)
+        self.train_valid_y = self.train_answers_pairs[:VALID_SAMPLES]
         
-        dev_valid_x = get_valid_data(self.dev_data)
-        dev_valid_y = self.dev_answers_pairs[:VALID_SAMPLES]
+        self.dev_valid_x = get_valid_data(self.dev_data)
+        self.dev_valid_y = self.dev_answers_pairs[:VALID_SAMPLES]
+        self.data_loaded = True
+
+    def train(self, data=None, meta=None, n_epochs=40, from_scratch=False):
+        model = self.model
+        if not self.data_loaded:
+            self.load_data()
+        logging.info('Training started')
         for i in range(n_epochs):
-            logging.info(time.ctime() + '| epoch #', i + 1)
-            model.fit(self.train_data, train_answers_bin_list, batch_size=BATCH_SIZE, epochs=1, verbose=0)
-            logging.info(time.ctime() + '| epoch finished')
-            logging.info('Train F1:' + str(measure_model_quality(model, 
-                                                            train_valid_x, 
-                                                            train_valid_y)))
-            logging.info('Dev F1:' + str(measure_model_quality(model,
-                                                            dev_valid_x,
-                                                            dev_valid_y)))
+            logging.info(time.ctime() + ' | epoch #' + str(i + 1))
+            model.fit(self.train_data, self.train_answers_bin_list, batch_size=BATCH_SIZE, epochs=1, verbose=0)
+            logging.info(time.ctime() + ' | epoch finished')
+            logging.info('Train F1: ' + str(measure_model_quality(model, 
+                                                                  self.train_valid_x, 
+                                                                  self.train_valid_y)))
+            logging.info('Dev F1: ' + str(measure_model_quality(model,
+                                                                self.dev_valid_x,
+                                                                self.dev_valid_y)))
             model_name = str(time.time())
             model.save(model_name)
             logging.info('Model saved with name:' + model_name)
         logging.info('Training finished')
+        
+    def quality(self):
+        if not self.data_loaded:
+            self.load_data()
+        logging.info('Train F1: ' + str(measure_model_quality(model, 
+                                                              self.train_valid_x, 
+                                                              self.train_valid_y)))
+        logging.info('Dev F1: ' + str(measure_model_quality(model,
+                                                            self.dev_valid_x,
+                                                            self.dev_valid_y)))
