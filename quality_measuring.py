@@ -39,6 +39,6 @@ def F1_score(pred_pairs, true_pairs):
     return F1_sum / len(pred_pairs)
 
 def measure_model_quality(model, data, true_pairs):
-    start_probas, end_probas = model.predict(data, batch_size=150)
+    start_probas, end_probas = model.predict(data, batch_size=100)
     pred_pairs = get_preds(start_probas, end_probas, MAX_ANSW_LEN)
     return F1_score(pred_pairs, true_pairs)

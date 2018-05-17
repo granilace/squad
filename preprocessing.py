@@ -1,6 +1,7 @@
 from constants import *
 
 import pickle
+import numpy as np
 
 import logging
 
@@ -123,6 +124,7 @@ def get_questions(data=None, is_train=True):
     return [question_ids_list, question_masks]
 
 def get_bin_answers_train(data=None):
+    logging.info('Getting binary answers for train')
     if TRAIN_ANSWER_BIN_PATH:
         return load_pickle(TRAIN_ANSWER_BIN_PATH)
     assert data is not None
@@ -146,6 +148,7 @@ def get_bin_answers_train(data=None):
     return [np.array(bin_answers_start), np.array(bin_answers_end)]
 
 def get_pairs_answers_train(data=None):
+    logging.info('Getting answer pairs for train')
     if TRAIN_ANSWER_PAIRS_PATH:
         return load_pickle(TRAIN_ANSWER_PAIRS_PATH)
     assert data is not None
@@ -154,14 +157,48 @@ def get_pairs_answers_train(data=None):
     for i, context in enumerate(data):
         answ_start = data[i][8]
         answ_end = data[i][9]
-        answ_list.append([answ_start, answ_end])
+        answ_list.append([[answ_start, answ_end]])
     return answ_list
 
 def get_pairs_answers_dev(data=None):
+    logging.info('Getting answer pairs for dev')
     if DEV_ANSWER_PAIRS_PATH:
         return load_pickle(DEV_ANSWER_PAIRS_PATH)
     assert data is not None
-    return
+    all_pairs = list()
+    for elem in data:
+        text_answ_list = elem[8]
+        answ_pairs = list()
+        for text_answ in text_answ_list:
+            start_pos_in_text = elem[6].find(text_answ)
+            end_pos_in_text = start_pos_in_text + len(text_answ)
+            while start_pos_in_text != -1:
+                answ_pair = [-1, -1]
+                for index, pair in enumerate(elem[7]):
+                    if pair[0] == start_pos_in_text:
+                        answ_pair[0] = index
+                    if pair[1] == end_pos_in_text:
+                        answ_pair[1] = index
+                if answ_pair[0] != -1 and answ_pair[1] != -1:
+                    answ_pairs.append(answ_pair)
+                    break
+                else:
+                    start_pos_in_text = elem[6].find(text_answ, start_pos_in_text + 1)
+                    end_pos_in_text = start_pos_in_text + len(text_answ)
+                    print(start_pos_in_text)
+        all_pairs.append(answ_pairs)
+    return all_pairs
 
 def load_embeddings(path1, path2, path3):
     return load_pickle(path1), load_pickle(path2), load_pickle(path3)
+
+def get_valid_data(data):
+    valid_data = []
+    for j in range(len(data)):
+        valid_data.append([])
+    for i in range(VALID_SAMPLES):
+        for j in range(len(data)):
+            valid_data[j].append(data[j][i])
+    for j in range(len(data)):
+        valid_data[j] = np.array(valid_data[j])
+    return valid_data
