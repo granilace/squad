@@ -78,9 +78,9 @@ def get_question_ids(data):
 #####
 def get_contexts(data=None, is_train=True):
     if is_train:
-        log.info('Getting contexts for train')
+        print('Getting contexts for train')
     else:
-        log.info('Getting contexts for dev')
+        print('Getting contexts for dev')
     #
     if TRAIN_CONTEXT_PATH and is_train:
         return load_pickle(TRAIN_CONTEXT_PATH)
@@ -89,26 +89,26 @@ def get_contexts(data=None, is_train=True):
     assert data is not None
 
     context_masks = get_context_masks(data)
-    log.info('Context masks loaded')
+    print('Context masks loaded')
 
     context_ids_list = get_context_ids(data)
-    log.info('Context ids loaded')
+    print('Context ids loaded')
 
     context_features = get_context_features(data)
-    log.info('Context features loaded')
+    print('Context features loaded')
 
     context_pos_tags = get_context_pos_tags(data)
-    log.info('Context pos tags loaded')
+    print('Context pos tags loaded')
 
     context_ent_tags = get_context_ent_tags(data)
-    log.info('Context entity tags loaded')
+    print('Context entity tags loaded')
     return [context_ids_list, context_features, context_pos_tags, context_ent_tags, context_masks]
 
 def get_questions(data=None, is_train=True):
     if is_train:
-        log.info('Getting questions for train')
+        print('Getting questions for train')
     else:
-        log.info('Getting questions for dev')
+        print('Getting questions for dev')
     if TRAIN_QUESTION_PATH and is_train:
         return load_pickle(TRAIN_QUESTION_PATH)
     if DEV_QUESTION_PATH and not is_train:
@@ -116,10 +116,10 @@ def get_questions(data=None, is_train=True):
     assert data is not None
 
     question_masks = get_question_masks(data)
-    log.info('Context masks loaded')
+    print('Context masks loaded')
 
     question_ids_list = get_question_ids(data)
-    log.info('Context ids loaded')
+    print('Context ids loaded')
     
     return [question_ids_list, question_masks]
 

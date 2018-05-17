@@ -2,12 +2,15 @@ from constants import *
 from layers import *
 from preprocessing import *
 from losses import *
+from quality_measuring import *
 
 from keras.layers import Input, Embedding, Dropout, Concatenate, Activation
 from keras import Model
 
 import logging
 log = logging.getLogger('log_file.txt')
+
+import time
 
 def attention_model_3():
     # inputs
@@ -97,7 +100,7 @@ class Attention_Model:
 
     def train(self, data=None, meta=None, n_epochs=40, from_scratch=False):
         model = self.model
-        log.info('Train started')
+        print('Train started')
         if data:
             train_data = data['train']
             dev_data = data['dev']
@@ -108,25 +111,25 @@ class Attention_Model:
         train_questions = get_questions(train_data) # [word_indices, mask]
         train_answers_bin_list = get_bin_answers_train(train_data) # [starts, ends]
         train_answers_pairs = get_pairs_answers_train(train_data) # [[start_1, end_1]]
-        log.info('Train data loaded')
+        print('Train data loaded')
         #
         dev_contexts = get_contexts(dev_data, is_train=False) # [word_indices, context_features, pos_tags, entity_tags, mask]
         dev_questions = get_questions(dev_data, is_train=False) # [word_indices, mask]
-        '''dev_answers_pairs = get_pairs_answers_dev(dev_data, is_train=False) # [[start_1, end_1], [start_2, end_2], ...]'''
-        log.info('Dev data loaded')
+        '''dev_answers_pairs = get_pairs_answers_dev(dev_data) # [[start_1, end_1], [start_2, end_2], ...]'''
+        print('Dev data loaded')
         #
         train_data = train_contexts + train_questions
         for i in range(n_epochs):
-            log.info(get_curr_time(), '| epoch #', i + 1)
-            model.fit(train_data, train_answers_bin_list, batch_size=BATCH_SIZE, epochs=1, verbose=0)
-            log.info(get_curr_time(), '| epoch finished')
-            log.info('Train F1:', measure_model_quality(model, 
-                                                        train_data[:VALID_SAMPLES], 
-                                                        train_answer_pairs[:VALID_SAMPLES]))
-            log.info('Dev F1:',   measure_model_quality(model,
-                                                        dev_data[:VALID_SAMPLES],
-                                                        dev_answer_pairs[:VALID_SAMPLES]))
+            print(time.ctime(), '| epoch #', i + 1)
+            model.fit(train_data, train_answers_bin_list, batch_size=BATCH_SIZE, epochs=1, verbose=1)
+            print(time.ctime(), '| epoch finished')
+            print('Train F1:', measure_model_quality(model, 
+                                                     train_data[:VALID_SAMPLES], 
+                                                     train_answer_pairs[:VALID_SAMPLES]))
+            print('Dev F1:',   measure_model_quality(model,
+                                                     dev_data[:VALID_SAMPLES],
+                                                     dev_answer_pairs[:VALID_SAMPLES]))
             model_name = str(time.time())
             model.save(model_name)
-            log.info('Model saved with name:', model_name)
-        log.info('Train finished')
+            print('Model saved with name:', model_name)
+        print('Train finished')
