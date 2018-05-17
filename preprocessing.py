@@ -3,7 +3,6 @@ from constants import *
 import pickle
 
 import logging
-log = logging.getLogger('log_file.txt')
 
 def load_pickle(file_name):
     with open(file_name, 'rb') as f:
@@ -78,9 +77,9 @@ def get_question_ids(data):
 #####
 def get_contexts(data=None, is_train=True):
     if is_train:
-        print('Getting contexts for train')
+        logging.info('Getting contexts for train')
     else:
-        print('Getting contexts for dev')
+        logging.info('Getting contexts for dev')
     #
     if TRAIN_CONTEXT_PATH and is_train:
         return load_pickle(TRAIN_CONTEXT_PATH)
@@ -89,26 +88,26 @@ def get_contexts(data=None, is_train=True):
     assert data is not None
 
     context_masks = get_context_masks(data)
-    print('Context masks loaded')
+    logging.info('Context masks loaded')
 
     context_ids_list = get_context_ids(data)
-    print('Context ids loaded')
+    logging.info('Context ids loaded')
 
     context_features = get_context_features(data)
-    print('Context features loaded')
+    logging.info('Context features loaded')
 
     context_pos_tags = get_context_pos_tags(data)
-    print('Context pos tags loaded')
+    logging.info('Context pos tags loaded')
 
     context_ent_tags = get_context_ent_tags(data)
-    print('Context entity tags loaded')
+    logging.info('Context entity tags loaded')
     return [context_ids_list, context_features, context_pos_tags, context_ent_tags, context_masks]
 
 def get_questions(data=None, is_train=True):
     if is_train:
-        print('Getting questions for train')
+        logging.info('Getting questions for train')
     else:
-        print('Getting questions for dev')
+        logging.info('Getting questions for dev')
     if TRAIN_QUESTION_PATH and is_train:
         return load_pickle(TRAIN_QUESTION_PATH)
     if DEV_QUESTION_PATH and not is_train:
@@ -116,10 +115,10 @@ def get_questions(data=None, is_train=True):
     assert data is not None
 
     question_masks = get_question_masks(data)
-    print('Context masks loaded')
+    logging.info('Context masks loaded')
 
     question_ids_list = get_question_ids(data)
-    print('Context ids loaded')
+    logging.info('Context ids loaded')
     
     return [question_ids_list, question_masks]
 
