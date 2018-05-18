@@ -6,6 +6,8 @@ from quality_measuring import *
 
 from keras.layers import Input, Embedding, Dropout, Concatenate, Activation
 from keras import Model
+from keras import optimizers
+from keras.layers.normalization import BatchNormalization
 
 import logging
 logging.basicConfig(filename='train.log',level=logging.DEBUG)
@@ -65,21 +67,21 @@ def attention_model_3():
     
     question_data = embedded_question
     # RNN for context
-    context_hiddens = Document_RNN(context_data)
+    context_hiddens = Document_RNN(BatchNormalization() (context_data))
     # RNN for question
-    question_hiddens = Question_RNN(question_data)
+    question_hiddens = Question_RNN(BatchNormalization() (question_data))
     # Attention for question
     question_with_attention = Linear_Attention(question_hiddens, question_mask)
     # Calculating output probas for start and end
     output_starts = Bilinear_Attention(context_hiddens,
                                        question_with_attention,
                                        context_mask)
-    output_starts = Activation('softmax') (output_starts)
+    output_starts = Activation('softmax') (BatchNormalization() (output_starts))
     
     output_ends = Bilinear_Attention(context_hiddens,
                                      question_with_attention,
                                      context_mask)
-    output_ends = Activation('softmax') (output_ends)
+    output_ends = Activation('softmax') (BatchNormalization() (output_ends))
     #
     model = Model(inputs=[context_indices, 
                           context_features, 
@@ -91,7 +93,7 @@ def attention_model_3():
                   outputs=[output_starts, 
                            output_ends])
     model.compile(loss=custom_loss,
-                  optimizer='rmsprop',
+                  optimizer=optimizers.Adamax(clipvalue=1.0, decay=0.0),
                   metrics=['accuracy'])
     return model
 
@@ -106,7 +108,7 @@ class Attention_Model:
             logging.info('---Model created---')
         self.data_loaded = False
         
-    def load_data(self, data=None, meta=None, from_scratch=False):
+    def load_data(self, data=None, meta=None):
         model = self.model
         logging.info('Data loading started')
         if data:
@@ -143,20 +145,16 @@ class Attention_Model:
         logging.info('Training started')
         for i in range(n_epochs):
             logging.info(time.ctime() + ' | epoch #' + str(i + 1))
-            model.fit(self.train_data, self.train_answers_bin_list, batch_size=BATCH_SIZE, epochs=1, verbose=0)
+            model.fit(self.train_data, self.train_answers_bin_list, batch_size=BATCH_SIZE, epochs=1, verbose=1)
             logging.info(time.ctime() + ' | epoch finished')
-            logging.info('Train F1: ' + str(measure_model_quality(model, 
-                                                                  self.train_valid_x, 
-                                                                  self.train_valid_y)))
-            logging.info('Dev F1: ' + str(measure_model_quality(model,
-                                                                self.dev_valid_x,
-                                                                self.dev_valid_y)))
+            self.quality()
             model_name = str(time.time())
             model.save(model_name)
             logging.info('Model saved with name:' + model_name)
         logging.info('Training finished')
         
     def quality(self):
+        model = self.model
         if not self.data_loaded:
             self.load_data()
         logging.info('Train F1: ' + str(measure_model_quality(model, 
