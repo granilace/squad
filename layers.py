@@ -1,29 +1,27 @@
 from constants import *
 
-from keras.layers import Bidirectional, LSTM, Dense, Flatten, Activation, RepeatVector, Permute, merge, Lambda
+from keras.layers import Bidirectional, LSTM, Dense, Flatten, Activation, RepeatVector, Permute, merge, Lambda, Reshape
+from keras.layers.normalization import BatchNormalization
 from keras import backend as K
 
 def Document_RNN(data):
     RNN_context = Bidirectional(LSTM(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE),
                         input_shape=(MAX_TEXT_LEN, INPUT_CONTEXT_LEN) ) (data)
     RNN_context = Bidirectional(LSTM(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE),
-                        input_shape=(MAX_TEXT_LEN, HIDDEN_SIZE) ) (RNN_context)
-    RNN_context = Bidirectional(LSTM(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE),
-                        input_shape=(MAX_TEXT_LEN, HIDDEN_SIZE) ) (RNN_context)
+                        input_shape=(MAX_TEXT_LEN, HIDDEN_SIZE) ) (BatchNormalization() (RNN_context))
     return RNN_context
 
 def Question_RNN(data):
     RNN_questions = Bidirectional(LSTM(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE),
                         input_shape=(MAX_QUESTION_LEN, INPUT_QUESTION_LEN)) (data)
     RNN_questions = Bidirectional(LSTM(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE),
-                        input_shape=(MAX_QUESTION_LEN, HIDDEN_SIZE)) (RNN_questions)
-    RNN_questions = Bidirectional(LSTM(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE),
-                        input_shape=(MAX_QUESTION_LEN, HIDDEN_SIZE)) (RNN_questions)
+                        input_shape=(MAX_QUESTION_LEN, HIDDEN_SIZE)) (BatchNormalization() (RNN_questions))
     return RNN_questions
 
 def Linear_Attention(data, mask):
     attention = Dense(1)(data)
-    attention = Flatten()(attention)
+    attention = Lambda(lambda x: x)(attention)
+    attention = Reshape((MAX_QUESTION_LEN,)) (attention)
     # TODO: apply masking
     attention = Activation('softmax')(attention)
     attention = RepeatVector(2*HIDDEN_SIZE)(attention)

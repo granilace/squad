@@ -4,7 +4,7 @@ from preprocessing import *
 from losses import *
 from quality_measuring import *
 
-from keras.layers import Input, Embedding, Dropout, Concatenate, Activation
+from keras.layers import Input, Embedding, Dropout, Concatenate, Activation, Masking
 from keras import Model
 from keras import optimizers
 from keras.layers.normalization import BatchNormalization
@@ -49,8 +49,8 @@ def attention_model_3():
     embedded_question = embedding_layer(question_indices)
     embedded_context = embedding_layer(context_indices)
     # dropout after embeddings
-    embedded_question = Dropout(EMBEDDING_DROPOUT_RATE) (embedded_question)
-    embedded_context = Dropout(EMBEDDING_DROPOUT_RATE) (embedded_context)
+    #embedded_question = Masking() (embedded_question)
+    #embedded_context = Masking() (embedded_context)
     # allignet question embedding
     #quemb_match = Seq_Attention(embedded_context, embedded_question, question_mask)
     # concating additional all contexts features
@@ -76,12 +76,12 @@ def attention_model_3():
     output_starts = Bilinear_Attention(context_hiddens,
                                        question_with_attention,
                                        context_mask)
-    output_starts = Activation('softmax') (BatchNormalization() (output_starts))
+    output_starts = Activation('softmax') (output_starts)
     
     output_ends = Bilinear_Attention(context_hiddens,
                                      question_with_attention,
                                      context_mask)
-    output_ends = Activation('softmax') (BatchNormalization() (output_ends))
+    output_ends = Activation('softmax') (output_ends)
     #
     model = Model(inputs=[context_indices, 
                           context_features, 
@@ -92,8 +92,8 @@ def attention_model_3():
                           question_mask], 
                   outputs=[output_starts, 
                            output_ends])
-    model.compile(loss=custom_loss,
-                  optimizer=optimizers.Adamax(clipvalue=1.0, decay=0.0),
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='RMSprop',
                   metrics=['accuracy'])
     return model
 
