@@ -145,8 +145,9 @@ def attention_model_3():
     # Attention for question
     question_with_attention = layers.Linear_Attention(question_hiddens)
     # Make stretched version of question with attention(for initial state in  Document RNN)
-    question_with_attention_stretched = Dense(INPUT_CONTEXT_LEN) (question_with_attention)
+    question_with_attention_stretched = Dense(HIDDEN_SIZE) (question_with_attention)
     # RNN for context
+    print(question_with_attention_stretched.shape)
     context_hiddens = layers.Document_RNN(BatchNormalization() (context_data), question_with_attention_stretched)
     # Calculating output probas for start and end
     output_starts = layers.Bilinear_Attention(context_hiddens,
@@ -225,7 +226,7 @@ class AttentionModel:
             logging.info(time.ctime() + ' | epoch finished')
             self.quality()
             model_name = MODELS_PATH + time.asctime()
-            self.save_model(model_name)
+            self.save(model_name)
         logging.info('Training finished')
         
     def quality(self):

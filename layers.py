@@ -1,13 +1,16 @@
 ## LAYERS WITHOUT SUPPORT OF MASKING
 from constants import *
 
-from keras.layers import Bidirectional, LSTM, Dense, Flatten, Activation, RepeatVector, Permute, merge, Lambda, Reshape
+from keras.layers import Bidirectional, LSTM, Dense, Flatten, Activation, RepeatVector, Permute, merge, Lambda, Reshape, GRU
 from keras.layers.normalization import BatchNormalization
 from keras import backend as K
 
-def Document_RNN(data):
-    RNN_context = Bidirectional(LSTM(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE),
-                        input_shape=(MAX_TEXT_LEN, INPUT_CONTEXT_LEN) ) (data)
+def Document_RNN(data, init_state):
+    RNN_context1 = GRU(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE,
+                        go_backwards=False) (data)
+    RNN_context2 = GRU(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE,
+                        go_backwards=True) (data)
+    RNN_context = merge([RNN_context1, RNN_context2], mode='concat')
     RNN_context = Bidirectional(LSTM(HIDDEN_SIZE, return_sequences=True, dropout=RNN_DROPOUT_RATE),
                         input_shape=(MAX_TEXT_LEN, HIDDEN_SIZE) ) (BatchNormalization() (RNN_context))
     return RNN_context
