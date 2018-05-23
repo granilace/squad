@@ -82,9 +82,9 @@ def get_contexts(data=None, is_train=True):
     else:
         logging.info('Getting contexts for dev')
     #
-    if TRAIN_CONTEXT_PATH and is_train:
+    if data is None and is_train:
         return load_pickle(TRAIN_CONTEXT_PATH)
-    if DEV_CONTEXT_PATH and not is_train:
+    if data is None and not is_train:
         return load_pickle(DEV_CONTEXT_PATH)
     assert data is not None
 
@@ -125,9 +125,8 @@ def get_questions(data=None, is_train=True):
 
 def get_bin_answers_train(data=None):
     logging.info('Getting binary answers for train')
-    if TRAIN_ANSWER_BIN_PATH:
+    if data is None:
         return load_pickle(TRAIN_ANSWER_BIN_PATH)
-    assert data is not None
     
     bin_answers_start = list()
     bin_answers_end = list()
@@ -149,7 +148,7 @@ def get_bin_answers_train(data=None):
 
 def get_pairs_answers_train(data=None):
     logging.info('Getting answer pairs for train')
-    if TRAIN_ANSWER_PAIRS_PATH:
+    if data is None:
         return load_pickle(TRAIN_ANSWER_PAIRS_PATH)
     assert data is not None
    
@@ -162,9 +161,8 @@ def get_pairs_answers_train(data=None):
 
 def get_pairs_answers_dev(data=None):
     logging.info('Getting answer pairs for dev')
-    if DEV_ANSWER_PAIRS_PATH:
+    if data is None:
         return load_pickle(DEV_ANSWER_PAIRS_PATH)
-    assert data is not None
     all_pairs = list()
     for elem in data:
         text_answ_list = elem[8]

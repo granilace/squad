@@ -67,8 +67,8 @@ def attention_model():
     # Make stretched version of question with attention(for initial state in  Document RNN)
     # question_with_attention_stretched = Dense(HIDDEN_SIZE) (question_with_attention)
     # RNN for context
-    #context_hiddens = layers.Document_RNN2(BatchNormalization() (context_data), question_with_attention_stretched)
     context_hiddens = layers.Document_RNN1(BatchNormalization() (context_data)) # Some bugs with keras' RNNs
+    #context_hiddens = layers.Document_RNN2(BatchNormalization() (context_data), question_with_attention_stretched)
     # Calculating output probas for start and end
     output_starts = layers.Bilinear_Attention(context_hiddens,
                                               question_with_attention)
