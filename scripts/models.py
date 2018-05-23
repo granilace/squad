@@ -135,7 +135,7 @@ class AttentionModel:
         self.dev_valid_y = self.dev_answers_pairs[:VALID_SAMPLES]
         self.data_loaded = True
 
-    def train(self, data=None, n_epochs=40, from_scratch=False):
+    def train(self, data=None, n_epochs=40):
         model = self.model
         if not self.data_loaded:
             self.load_data()
