@@ -2,6 +2,7 @@ import wget
 import numpy as np
 import sys
 import msgpack
+import os
 sys.path.insert(0, 'scripts')
 
 from constants import *
@@ -79,6 +80,8 @@ def build_train_questions(data):
     
 
 def main():
+    os.mkdir('data')
+    os.mkdir('keras_models')
     download_all = input('Enter YES if you want to download all data(necessary for train.py and test.py\n')
     if download_all == 'YES':
         data = get_raw_data()
