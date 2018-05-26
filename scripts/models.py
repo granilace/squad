@@ -152,12 +152,17 @@ class AttentionModel:
         model = self.model
         if not self.data_loaded:
             self.load_data()
-        logging.info('Train F1: ' + str(measure_model_quality(model, 
-                                                              self.train_valid_x, 
-                                                              self.train_valid_y)))
-        logging.info('Dev F1:   ' + str(measure_model_quality(model,
-                                                              self.dev_valid_x,
-                                                              self.dev_valid_y)))
+        train_quality = str(measure_model_quality(model, 
+                                                  self.train_valid_x, 
+                                                  self.train_valid_y))
+        dev_quality = str(measure_model_quality(model,
+                                                self.dev_valid_x,
+                                                self.dev_valid_y))
+        logging.info('Train F1: ' + train_quality)
+        logging.info('Dev F1:   ' + dev_quality)
+        print('Train F1: ' + train_quality)
+        print('Dev F1:   ' + dev_quality)
+
     def save(self, name=None):
         if not name:
             name = MODELS_PATH + time.asctime()

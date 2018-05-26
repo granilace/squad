@@ -69,12 +69,12 @@ def build_train_answ_pairs(data):
     free_mem(answs)
 
 def build_train_contexts(data):
-    contexts = get_contexts(data['dev'], is_train=True)
+    contexts = get_contexts(data['train'], is_train=True)
     save_pickle(contexts, TRAIN_CONTEXT_PATH)
     free_mem(contexts)
     
 def build_train_questions(data):
-    questions = get_questions(data['dev'], is_train=True)
+    questions = get_questions(data['train'], is_train=True)
     save_pickle(questions, TRAIN_QUESTION_PATH)
     free_mem(questions)
     
@@ -82,8 +82,9 @@ def build_train_questions(data):
 def main():
     os.mkdir('data')
     os.mkdir('keras_models')
-    download_all = input('Enter YES if you want to download all data(necessary for train.py and test.py\n')
-    if download_all == 'YES':
+    download_all = sys.argv[1] == '-full'
+    if download_all:
+        print('Downloading all data')
         data = get_raw_data()
         build_dev_answ_pairs(data)
         build_dev_contexts(data)

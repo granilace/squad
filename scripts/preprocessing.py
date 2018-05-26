@@ -109,9 +109,9 @@ def get_questions(data=None, is_train=True):
         logging.info('Getting questions for train')
     else:
         logging.info('Getting questions for dev')
-    if TRAIN_QUESTION_PATH and is_train:
+    if data is None and is_train:
         return load_pickle(TRAIN_QUESTION_PATH)
-    if DEV_QUESTION_PATH and not is_train:
+    if data is None and not is_train:
         return load_pickle(DEV_QUESTION_PATH)
     assert data is not None
 
