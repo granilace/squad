@@ -24,7 +24,7 @@ def get_raw_meta():
     return meta
 
 def load_last_model():
-    wget.download('https://www.dropbox.com/s/egzrqi0cumovsmn/Mon%20May%2021%2015_44_14%202018?dl=1', MODELS_PATH + LAST_MODEL_NAME)
+    wget.download('https://www.dropbox.com/s/h2av223jmz30emk/Fri%20May%2025%2018_10_27%202018?dl=1', MODELS_PATH + LAST_MODEL_NAME)
 
 def build_dev_answ_pairs(data):
     pairs = get_pairs_answers_dev(data['dev'])
