@@ -17,6 +17,7 @@ import models
 
 nlp = spacy.load('en', parser=False)
 
+### Facebook's functions for preprocessing ###
 def clean_spaces(text):
     """normalize spaces in a string."""
     text = re.sub(r'\s', ' ', text)
@@ -65,6 +66,7 @@ def to_id(row, w2id, tag2id, ent2id, unk_id=1):
     tag_ids = [tag2id[w] for w in context_tags]
     ent_ids = [ent2id[w] for w in context_ents]
     return (row[0], context_ids, context_features, tag_ids, ent_ids, question_ids) + row[6:]
+#########
 
 def generate_batch(data):
     padd(data[1], 0, MAX_TEXT_LEN)
