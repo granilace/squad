@@ -2,8 +2,8 @@ sys
 time
 msgpack
 spacy
-tensorflow
-keras
+tensorflow==1.4.0
+keras==2.0.9
 unicodedata
 collections
 wget
