@@ -80,8 +80,14 @@ def build_train_questions(data):
     
 
 def main():
-    os.mkdir('data')
-    os.mkdir('keras_models')
+    try:
+        os.mkdir('data')
+    except:
+        print('data folder is already created')
+    try:
+        os.mkdir('keras_models')
+    except:
+        print('keras_models folder is already created')
     download_all = sys.argv[1] == '-full'
     if download_all:
         print('Downloading all data')
